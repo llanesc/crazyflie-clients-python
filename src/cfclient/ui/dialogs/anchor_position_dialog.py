@@ -6,7 +6,7 @@
 #  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
 #
-#  Copyright (C) 2018-2023 Bitcraze AB
+#  Copyright (C) 2018 Bitcraze AB
 #
 #  This program is free software; you can redistribute it and/or
 #  modify it under the terms of the GNU General Public License
@@ -29,11 +29,11 @@ import logging
 
 import cfclient
 from cfclient.utils.logconfigreader import FILE_REGEX_YAML
-from PyQt6 import QtWidgets
-from PyQt6 import uic
-from PyQt6.QtCore import QAbstractTableModel, QVariant, Qt
-from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import QInputDialog, QFileDialog
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+from PyQt5.QtCore import QAbstractTableModel, QVariant, Qt
+from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtWidgets import QInputDialog, QFileDialog
 import yaml
 import os
 
@@ -68,22 +68,22 @@ class AnchorPositionConfigTableModel(QAbstractTableModel):
         value = self._anchor_positions[index.row()][index.column()]
         if index.isValid():
             if index.column() == 0:
-                if role == Qt.ItemDataRole.CheckStateRole:
+                if role == Qt.CheckStateRole:
                     return QVariant(value)
             elif index.column() == 1:
-                if role == Qt.ItemDataRole.DisplayRole:
+                if role == Qt.DisplayRole:
                     return QVariant(value)
             else:
-                if role == Qt.ItemDataRole.DisplayRole:
+                if role == Qt.DisplayRole:
                     return QVariant('%.2f' % (value))
-                elif role == Qt.ItemDataRole.EditRole:
+                elif role == Qt.EditRole:
                     return QVariant(value)
-                elif role == Qt.ItemDataRole.BackgroundRole:
+                elif role == Qt.BackgroundRole:
                     return self._get_background(index.row(), index.column())
 
         return QVariant()
 
-    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
+    def setData(self, index, value, role=Qt.EditRole):
         if not index.isValid():
             return False
 
@@ -91,7 +91,7 @@ class AnchorPositionConfigTableModel(QAbstractTableModel):
         return True
 
     def headerData(self, col, orientation, role=None):
-        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             return QVariant(self._headers[col])
         return QVariant()
 
@@ -100,11 +100,11 @@ class AnchorPositionConfigTableModel(QAbstractTableModel):
             return None
 
         if index.column() == 0:
-            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsUserCheckable
+            return Qt.ItemIsEnabled | Qt.ItemIsUserCheckable
         elif index.column() == 1:
-            return Qt.ItemFlag.ItemIsEnabled
+            return Qt.ItemIsEnabled
         else:
-            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsEditable
+            return Qt.ItemIsEnabled | Qt.ItemIsEditable
 
     def add_anchor(self, anchor_id, x=0.0, y=0.0, z=0.0):
         if not self._id_exist(anchor_id):
@@ -176,11 +176,11 @@ class AnchorPositionDialog(QtWidgets.QWidget, anchor_postiong_widget_class):
         self._table_view.verticalHeader().setVisible(False)
 
         header = self._table_view.horizontalHeader()
-        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeMode.Stretch)
-        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.Stretch)
 
         self._add_anchor_button.clicked.connect(
             self._add_anchor_button_clicked)

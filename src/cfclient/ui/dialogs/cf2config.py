@@ -7,7 +7,7 @@
 #  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
 #
-#  Copyright (C) 2011-2023 Bitcraze AB
+#  Copyright (C) 2011-2013 Bitcraze AB
 #
 #  Crazyflie Nano Quadcopter Client
 #
@@ -32,9 +32,9 @@ import logging
 import cfclient
 from cflib.crazyflie.mem import MemoryElement
 
-from PyQt6 import QtWidgets
-from PyQt6 import uic
-from PyQt6.QtCore import pyqtSignal
+from PyQt5 import QtWidgets
+from PyQt5 import uic
+from PyQt5.QtCore import pyqtSignal
 
 __author__ = 'Bitcraze AB'
 __all__ = ['Cf2ConfigDialog']
@@ -93,7 +93,7 @@ class Cf2ConfigDialog(QtWidgets.QWidget, service_dialog_class):
         self._pitch_trim.setValue(0)
         self._radio_channel.setValue(0)
         self._radio_speed.setCurrentIndex(0)
-        self._radio_address.setValue(0)
+        self._radio_address.setText("")
         self._radio_address.setEnabled(False)
 
     def _write_data(self):

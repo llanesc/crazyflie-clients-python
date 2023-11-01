@@ -7,7 +7,7 @@
 #  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
 #
-#  Copyright (C) 2011-2023 Bitcraze AB
+#  Copyright (C) 2011-2013 Bitcraze AB
 #
 #  Crazyflie Nano Quadcopter Client
 #
@@ -32,15 +32,16 @@ and manipulating the plot.
 For more advanced plotting save the data and use an external application.
 """
 
-from PyQt6 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic
 
 from time import time
 
 import logging
 
-from PyQt6.QtWidgets import QButtonGroup
-from PyQt6.QtCore import *  # noqa
-from PyQt6.QtWidgets import *  # noqa
+from PyQt5.QtWidgets import QButtonGroup
+from PyQt5.QtCore import *  # noqa
+from PyQt5.QtWidgets import *  # noqa
+from PyQt5.Qt import *  # noqa
 
 import cfclient
 
@@ -129,8 +130,8 @@ class PlotWidget(QtWidgets.QWidget, plot_widget_class):
         self._last_item = 0
 
         self.setSizePolicy(QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.MinimumExpanding,
-            QtWidgets.QSizePolicy.Policy.MinimumExpanding))
+            QtWidgets.QSizePolicy.MinimumExpanding,
+            QtWidgets.QSizePolicy.MinimumExpanding))
 
         self.setMinimumSize(self.minimumSizeHint())
         self.parent = parent

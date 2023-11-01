@@ -7,7 +7,7 @@
 #  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
 #
-#  Copyright (C) 2011-2023 Bitcraze AB
+#  Copyright (C) 2011-2013 Bitcraze AB
 #
 #  Crazyflie Nano Quadcopter Client
 #
@@ -31,10 +31,10 @@ Superclass for all tabs that implements common functions.
 
 import logging
 
-from PyQt6 import QtWidgets
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QCloseEvent
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QCloseEvent
 
 from cfclient.utils.config import Config
 
@@ -68,13 +68,6 @@ class TabToolbox(QtWidgets.QWidget):
         self._display_state = self.DS_HIDDEN
 
         self._dock_area = self._get_toolbox_area_config()
-
-        # Do not allow floating toolboxes, it seems to be buggy
-        self.dock_widget.setFeatures(QtWidgets.QDockWidget.DockWidgetFeature.DockWidgetClosable |
-                                     QtWidgets.QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        # If floating is set in the config, change to right docking area
-        if self._dock_area == Qt.DockWidgetArea.NoDockWidgetArea:
-            self._dock_area = Qt.DockWidgetArea.RightDockWidgetArea
 
     def get_tab_toolbox_name(self):
         """Return the name that will be shown in the tab or toolbox"""
@@ -161,18 +154,18 @@ class TabToolbox(QtWidgets.QWidget):
         Config().set(key, value)
 
     def _get_toolbox_area_config(self):
-        result = Qt.DockWidgetArea.RightDockWidgetArea
+        result = Qt.RightDockWidgetArea
 
         config = self._read_toolbox_area_config()
 
         if self.tab_toolbox_name in config.keys():
-            result = Qt.DockWidgetArea(config[self.tab_toolbox_name])
+            result = config[self.tab_toolbox_name]
 
         return result
 
     def _store_toolbox_area_config(self, area):
         config = self._read_toolbox_area_config()
-        config[self.tab_toolbox_name] = area.value
+        config[self.tab_toolbox_name] = area
         self._write_toolbox_area_config(config)
 
     def _read_toolbox_area_config(self):
@@ -190,7 +183,7 @@ class TabToolbox(QtWidgets.QWidget):
             try:
                 parts = composite.split(':')
                 config[parts[0]] = int(parts[1])
-            except (KeyError, ValueError):
+            except KeyError:
                 logger.info(f'Can not understand config {composite}')
 
         return config

@@ -7,7 +7,7 @@
 #  +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
 #   ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
 #
-#  Copyright (C) 2011-2023 Bitcraze AB
+#  Copyright (C) 2011-2022 Bitcraze AB
 #
 #  Crazyflie Nano Quadcopter Client
 #
@@ -32,16 +32,16 @@ The flight control tab shows telemetry data and flight settings.
 import logging
 from enum import Enum
 
-from PyQt6 import uic
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtWidgets import QMessageBox
+from PyQt5 import uic
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtWidgets import QMessageBox
 
 import cfclient
 from cfclient.ui.widgets.ai import AttitudeIndicator
 
+from cfclient.utils.config import Config
 from cflib.crazyflie.log import LogConfig
 
-from cfclient.utils.config import Config
 from cfclient.utils.input import JoystickReader
 
 from cfclient.ui.tab_toolbox import TabToolbox
@@ -191,7 +191,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         # Supervisor
         self._supervisor_info_bitfield = 0
         self.armButton.clicked.connect(self.updateArm)
-        self._update_supervisor_and_arming(False)
+        self._update_arm_button(False)
 
         self.uiSetupReady()
 
@@ -247,7 +247,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         return ((thrust / MAX_THRUST) * 100.0)
 
     def uiSetupReady(self):
-        flightComboIndex = self.flightModeCombo.findText(Config().get("flightmode"), Qt.MatchFlag.MatchFixedString)
+        flightComboIndex = self.flightModeCombo.findText(Config().get("flightmode"), Qt.MatchFixedString)
         if (flightComboIndex < 0):
             self.flightModeCombo.setCurrentIndex(0)
             self.flightModeCombo.currentIndexChanged.emit(0)
@@ -261,7 +261,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         move_vel = 0.5
 
         if action == CommanderAction.TAKE_OFF:
-            self._helper.cf.param.set_value('commander.enHighLevel', '1')
+            # self._helper.cf.param.set_value('commander.enHighLevel', '1')
             z_target = current_z + move_dist
             self._helper.cf.high_level_commander.takeoff(z_target, move_dist / move_vel)
         elif action == CommanderAction.LAND:
@@ -291,8 +291,8 @@ class FlightTab(TabToolbox, flight_tab_class):
             self.actualM3.setValue(data[self.LOG_NAME_MOTOR_3])
             self.actualM4.setValue(data[self.LOG_NAME_MOTOR_4])
 
-            self.estimateThrust.setText(
-                "%.2f%%" % self.thrustToPercentage(data[self.LOG_NAME_THRUST]))
+            # self.estimateThrust.setText(
+            #     "%.2f%%" % self.thrustToPercentage(data[self.LOG_NAME_THRUST]))
 
             if data[self.LOG_NAME_CAN_FLY] != self._can_fly_deprecated:
                 self._can_fly_deprecated = data[self.LOG_NAME_CAN_FLY]
@@ -301,7 +301,7 @@ class FlightTab(TabToolbox, flight_tab_class):
             if self.LOG_NAME_SUPERVISOR_INFO in data:
                 self._supervisor_info_bitfield = data[self.LOG_NAME_SUPERVISOR_INFO]
 
-            self._update_supervisor_and_arming(True)
+            self._update_arm_button(True)
 
     def _pose_data_received(self, pose_logger, pose):
         if self.isVisible():
@@ -355,30 +355,17 @@ class FlightTab(TabToolbox, flight_tab_class):
         self.inputRollLabel.setText(roll)
         self.inputYawLabel.setText(yaw)
 
-    def _update_supervisor_and_arming(self, connected):
+    def _update_arm_button(self, connected):
         if not connected:
             self.armButton.setStyleSheet("")
             self.armButton.setText("Arm")
             self.armButton.setEnabled(False)
-            self._supervisor_state.setText("")
-            self._supervisor_state.setStyleSheet("")
             return
-
-        self._supervisor_state.setText("")
-        if self._is_tumbled():
-            self._supervisor_state.setText("Tumbled")
-
-        if self._is_locked():
-            self._supervisor_state.setText("Locked-please reboot")
-            self._supervisor_state.setStyleSheet("background-color: red")
-        else:
-            self._supervisor_state.setStyleSheet("")
 
         if self._is_flying():
             self.armButton.setEnabled(True)
             self.armButton.setText("Emergency stop")
             self.armButton.setStyleSheet("background-color: red")
-            self._supervisor_state.setText("Flying")
             return
 
         if self._is_armed():
@@ -401,17 +388,17 @@ class FlightTab(TabToolbox, flight_tab_class):
     def _update_flight_commander(self, connected):
         self.commanderBox.setToolTip(str())
         if not connected:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         if self._can_fly_deprecated == 0:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             self.commanderBox.setToolTip('The Crazyflie reports that flight is not possible')
             return
 
         # We cannot know if we have a positioning deck until we get params
         if not self._helper.cf.param.is_updated:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         #                  flowV1    flowV2     LightHouse       LPS
@@ -422,7 +409,7 @@ class FlightTab(TabToolbox, flight_tab_class):
                 break
         else:
             self.commanderBox.setToolTip('You need a positioning deck to use Command Based Flight')
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         # To prevent conflicting commands from the controller and the flight panel
@@ -430,7 +417,7 @@ class FlightTab(TabToolbox, flight_tab_class):
             self.commanderBox.setToolTip(
                 'Cant use both an controller and Command Based Flight'
             )
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
     def connected(self, linkURI):
@@ -447,11 +434,6 @@ class FlightTab(TabToolbox, flight_tab_class):
         # Add supervisor info if it exists to keep backwards compatibility
         if self._helper.cf.log.toc.get_element_by_complete_name(self.LOG_NAME_SUPERVISOR_INFO):
             lg.add_variable(self.LOG_NAME_SUPERVISOR_INFO)
-        # Full supervisor info available after V7, hide supervisor info for earlier versions
-        update_supervisor_info = self._helper.cf.platform.get_protocol_version() >= 7
-        self._supervisor_state.setVisible(update_supervisor_info)
-        self._supervisor_label1.setVisible(update_supervisor_info)
-        self._supervisor_label2.setVisible(update_supervisor_info)
 
         try:
             self._helper.cf.log.add_config(lg)
@@ -521,7 +503,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         self._update_flight_commander(False)
 
         self._supervisor_info_bitfield = 0
-        self._update_supervisor_and_arming(False)
+        self._update_arm_button(False)
 
     def _can_arm(self):
         return bool(self._supervisor_info_bitfield & 0x0001)
@@ -540,9 +522,6 @@ class FlightTab(TabToolbox, flight_tab_class):
 
     def _is_tumbled(self):
         return bool(self._supervisor_info_bitfield & 0x0020)
-
-    def _is_locked(self):
-        return bool(self._supervisor_info_bitfield & 0x0040)
 
     def minMaxThrustChanged(self):
         self._helper.inputDeviceReader.min_thrust = self.minThrust.value()
@@ -706,7 +685,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         self._ring_populate_dropdown()
         self._populate_assisted_mode_dropdown()
         self._update_flight_commander(True)
-        self._update_supervisor_and_arming(True)
+        self._update_arm_button(True)
 
     def _ring_populate_dropdown(self):
         try:
@@ -776,10 +755,14 @@ class FlightTab(TabToolbox, flight_tab_class):
         self._assist_mode_combo.addItem("Hover", 3)
 
         # Add the tooltips to the assist-mode items.
-        self._assist_mode_combo.setItemData(0, TOOLTIP_ALTITUDE_HOLD, Qt.ItemDataRole.ToolTipRole)
-        self._assist_mode_combo.setItemData(1, TOOLTIP_POSITION_HOLD, Qt.ItemDataRole.ToolTipRole)
-        self._assist_mode_combo.setItemData(2, TOOLTIP_HEIGHT_HOLD, Qt.ItemDataRole.ToolTipRole)
-        self._assist_mode_combo.setItemData(3, TOOLTIP_HOVER, Qt.ItemDataRole.ToolTipRole)
+        self._assist_mode_combo.setItemData(0, TOOLTIP_ALTITUDE_HOLD,
+                                            Qt.ToolTipRole)
+        self._assist_mode_combo.setItemData(1, TOOLTIP_POSITION_HOLD,
+                                            Qt.ToolTipRole)
+        self._assist_mode_combo.setItemData(2, TOOLTIP_HEIGHT_HOLD,
+                                            Qt.ToolTipRole)
+        self._assist_mode_combo.setItemData(3, TOOLTIP_HOVER,
+                                            Qt.ToolTipRole)
 
         heightHoldPossible = False
         hoverPossible = False
