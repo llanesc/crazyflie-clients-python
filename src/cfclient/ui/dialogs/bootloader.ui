@@ -76,7 +76,7 @@
                </widget>
               </item>
               <item>
-               <widget class="HexSpinBox" name="address">
+               <widget class="AddressBox" name="address">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -373,9 +373,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>HexSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>cfclient.ui.widgets.hexspinbox</header>
+   <class>AddressBox</class>
+   <extends>QLineEdit</extends>
+   <header>cfclient.ui.widgets.addressbox</header>
   </customwidget>
  </customwidgets>
  <resources/>

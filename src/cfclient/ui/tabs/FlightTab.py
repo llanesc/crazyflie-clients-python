@@ -261,7 +261,7 @@ class FlightTab(TabToolbox, flight_tab_class):
         move_vel = 0.5
 
         if action == CommanderAction.TAKE_OFF:
-            self._helper.cf.param.set_value('commander.enHighLevel', '1')
+            # self._helper.cf.param.set_value('commander.enHighLevel', '1')
             z_target = current_z + move_dist
             self._helper.cf.high_level_commander.takeoff(z_target, move_dist / move_vel)
         elif action == CommanderAction.LAND:
@@ -291,8 +291,8 @@ class FlightTab(TabToolbox, flight_tab_class):
             self.actualM3.setValue(data[self.LOG_NAME_MOTOR_3])
             self.actualM4.setValue(data[self.LOG_NAME_MOTOR_4])
 
-            self.estimateThrust.setText(
-                "%.2f%%" % self.thrustToPercentage(data[self.LOG_NAME_THRUST]))
+            # self.estimateThrust.setText(
+            #     "%.2f%%" % self.thrustToPercentage(data[self.LOG_NAME_THRUST]))
 
             if data[self.LOG_NAME_CAN_FLY] != self._can_fly_deprecated:
                 self._can_fly_deprecated = data[self.LOG_NAME_CAN_FLY]
@@ -388,17 +388,17 @@ class FlightTab(TabToolbox, flight_tab_class):
     def _update_flight_commander(self, connected):
         self.commanderBox.setToolTip(str())
         if not connected:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         if self._can_fly_deprecated == 0:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             self.commanderBox.setToolTip('The Crazyflie reports that flight is not possible')
             return
 
         # We cannot know if we have a positioning deck until we get params
         if not self._helper.cf.param.is_updated:
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         #                  flowV1    flowV2     LightHouse       LPS
@@ -409,7 +409,7 @@ class FlightTab(TabToolbox, flight_tab_class):
                 break
         else:
             self.commanderBox.setToolTip('You need a positioning deck to use Command Based Flight')
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
         # To prevent conflicting commands from the controller and the flight panel
@@ -417,7 +417,7 @@ class FlightTab(TabToolbox, flight_tab_class):
             self.commanderBox.setToolTip(
                 'Cant use both an controller and Command Based Flight'
             )
-            self.commanderBox.setEnabled(False)
+            self.commanderBox.setEnabled(True)
             return
 
     def connected(self, linkURI):
