@@ -383,7 +383,7 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
                 finally:
                     self.address.setText(address)
             else:
-                address = "127.0.0.1"
+                address = "0.0.0.0"
                 self.address.setText(address)
 
     def _theme_selected(self, *args):
