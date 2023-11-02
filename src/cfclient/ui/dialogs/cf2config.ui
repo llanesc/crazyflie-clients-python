@@ -167,7 +167,7 @@
            </widget>
           </item>
           <item row="7" column="1">
-           <widget class="HexSpinBox" name="_radio_address"/>
+           <widget class="AddressBox" name="_radio_address"/>
           </item>
          </layout>
         </widget>
@@ -180,9 +180,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>HexSpinBox</class>
-   <extends>QSpinBox</extends>
-   <header>cfclient.ui.widgets.hexspinbox</header>
+   <class>AddressBox</class>
+   <extends>QLineEdit</extends>
+   <header>cfclient.ui.widgets.addressbox</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -178,6 +178,7 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
         self._menuItem_openconfigfolder.triggered.connect(
             self._open_config_folder)
 
+        self.sitl_enabled = False
         self._set_address()
 
         self._connectivity_manager = ConnectivityManager()
@@ -186,11 +187,12 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
                 interface_combo=self.interfaceCombo,
                 address_spinner=self.address,
                 connect_button=self.connectButton,
-                scan_button=self.scanButton))
+                scan_button=self.scanButton,
+                sitl_check_box=self.sitlCheckBox))
 
         self._connectivity_manager.connect_button_clicked.connect(self._connect)
         self._connectivity_manager.scan_button_clicked.connect(self._scan_from_button)
-
+        self._connectivity_manager.sitl_check_box_changed.connect(self._sitl_update)
         self._disable_input = False
 
         self.joystickReader.input_updated.add_callback(
@@ -256,7 +258,7 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
         self.menuItemAbout.triggered.connect(self._about_dialog.show)
         self._menu_cf2_config.triggered.connect(self._cf2config_dialog.show)
 
-        self._connectivity_manager.set_address(self.address.value())
+        self._connectivity_manager.set_address(self.address.text())
 
         self._initial_scan = True
         self._scan(self._connectivity_manager.get_address())
@@ -364,19 +366,23 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
                 self._tab_toolbox_show_as_toolbox(loaded_tab_toolboxes[name])
 
     def _set_address(self):
-        address = 0xE7E7E7E7E7
-        try:
-            link_uri = Config().get("link_uri")
-            if link_uri.startswith("radio://"):
-                if len(link_uri) > 0:
-                    parts = link_uri.split('/')
-                    # The uri might not contain an address
-                    if len(parts) == 6:
-                        address = int(parts[-1], 16)
-        except Exception as err:
-            logger.warn('failed to parse address from config: %s' % str(err))
-        finally:
-            self.address.setValue(address)
+            if not self.sitl_enabled:
+                address = "0xE7E7E7E7E7"
+                try:
+                    link_uri = Config().get("link_uri")
+                    if link_uri.startswith("radio://"):
+                        if len(link_uri) > 0:
+                            parts = link_uri.split('/')
+                            # The uri might not contain an address
+                            if len(parts) == 6:
+                                address = int(parts[-1], 16)
+                except Exception as err:
+                    logger.warn('failed to parse address from config: %s' % str(err))
+                finally:
+                    self.address.setText(address)
+            else:
+                address = "0.0.0.0"
+                self.address.setText(address)
 
     def _theme_selected(self, *args):
         """ Callback when a theme is selected. """
@@ -597,18 +603,18 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
         self.uiState = UIState.CONNECTED
         self._update_ui_state()
 
-        Config().set("link_uri", str(self._connectivity_manager.get_interface()))
+        # Config().set("link_uri", str(self._connectivity_manager.get_interface()))
 
-        lg = LogConfig("Battery", 1000)
-        lg.add_variable("pm.vbat", "float")
-        lg.add_variable("pm.state", "int8_t")
-        try:
-            self.cf.log.add_config(lg)
-            lg.data_received_cb.add_callback(self.batteryUpdatedSignal.emit)
-            lg.error_cb.add_callback(self._log_error_signal.emit)
-            lg.start()
-        except KeyError as e:
-            logger.warning(str(e))
+        # lg = LogConfig("Battery", 1000)
+        # lg.add_variable("pm.vbat", "float")
+        # lg.add_variable("pm.state", "int8_t")
+        # try:
+        #     self.cf.log.add_config(lg)
+        #     lg.data_received_cb.add_callback(self.batteryUpdatedSignal.emit)
+        #     lg.error_cb.add_callback(self._log_error_signal.emit)
+        #     lg.start()
+        # except KeyError as e:
+        #     logger.warning(str(e))
 
         mems = self.cf.mem.get_mems(MemoryElement.TYPE_DRIVER_LED)
         if len(mems) > 0:
@@ -675,7 +681,7 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
         # If it is there, but we have no permissions we inform the user, once,
         # about how to install the udev rules.
         #
-        if not self._permission_warned:
+        if not self._permission_warned and not self.sitl_enabled:
             try:
                 radio = cflib.crtp.radiodriver.RadioManager.open(0)
                 radio.close()
@@ -697,6 +703,12 @@ class MainUI(QtWidgets.QMainWindow, main_window_class):
 
         self._scan(address)
 
+    def _sitl_update(self, state):
+        if state == 0:
+            self.sitl_enabled = False
+        elif state == 2:
+            self.sitl_enabled = True
+        self._set_address()
     def _display_input_device_error(self, error):
         self.cf.close_link()
         QMessageBox.critical(self, "Input device error", error)
