@@ -30,4 +30,4 @@ Custom widgets used by the user interface.
 """
 
 # This is required to show an hidden import to py2exe
-from .addressbox import AddressBox as _AddressBox # noqa
+from .hexspinbox import HexSpinBox as _HexSpinBox  # noqa

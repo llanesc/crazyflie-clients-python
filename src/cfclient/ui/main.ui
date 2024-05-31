@@ -251,7 +251,7 @@
           </widget>
          </item>
          <item>
-          <widget class="AddressBox" name="address">
+          <widget class="HexSpinBox" name="address">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -263,13 +263,6 @@
              <width>158</width>
              <height>0</height>
             </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="sitlCheckBox">
-           <property name="text">
-            <string>SITL</string>
            </property>
           </widget>
          </item>
@@ -561,9 +554,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AddressBox</class>
-   <extends>QLineEdit</extends>
-   <header>cfclient.ui.widgets.addressbox</header>
+   <class>HexSpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>cfclient.ui.widgets.hexspinbox</header>
   </customwidget>
  </customwidgets>
  <resources/>
